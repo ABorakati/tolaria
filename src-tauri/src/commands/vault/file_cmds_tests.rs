@@ -16,14 +16,14 @@ async fn note_content_commands_roundtrip_with_requested_vault() {
     let root = vault_root(&dir);
     let note = note_path(&dir, "notes/command-note.md");
 
-    create_note_content(
+    create_note_content_blocking(
         note.clone(),
         "# Command Note\n".to_string(),
         Some(root.clone()),
     )
     .unwrap();
     assert_eq!(
-        get_note_content(note.clone(), Some(root.clone())).unwrap(),
+        get_note_content_blocking(note.clone(), Some(root.clone())).unwrap(),
         "# Command Note\n"
     );
 
@@ -34,7 +34,7 @@ async fn note_content_commands_roundtrip_with_requested_vault() {
     )
     .await
     .unwrap();
-    assert!(!sync_note_title(note.clone(), Some(root.clone())).unwrap());
+    assert!(!sync_note_title_blocking(note.clone(), Some(root.clone())).unwrap());
 
     save_note_content(
         note.clone(),
@@ -43,10 +43,33 @@ async fn note_content_commands_roundtrip_with_requested_vault() {
     )
     .await
     .unwrap();
-    assert!(sync_note_title(note.clone(), Some(root.clone())).unwrap());
-    assert!(get_note_content(note, Some(root))
+    assert!(sync_note_title_blocking(note.clone(), Some(root.clone())).unwrap());
+    assert!(get_note_content_blocking(note, Some(root))
         .unwrap()
         .contains("title: Command Note"));
+}
+
+#[tokio::test]
+async fn note_content_commands_run_their_io_off_the_calling_thread() {
+    let dir = TempDir::new().unwrap();
+    let root = vault_root(&dir);
+    let note = note_path(&dir, "async-note.md");
+
+    create_note_content(note.clone(), "# Async\n".to_string(), Some(root.clone()))
+        .await
+        .unwrap();
+
+    assert_eq!(
+        get_note_content(note.clone(), Some(root.clone()))
+            .await
+            .unwrap(),
+        "# Async\n"
+    );
+    assert!(
+        validate_note_content(note, "# Async\n".to_string(), Some(root))
+            .await
+            .unwrap()
+    );
 }
 
 #[tokio::test]
@@ -67,7 +90,7 @@ async fn note_content_commands_accept_windows_sensitive_valid_segments() {
     .unwrap();
 
     assert_eq!(
-        get_note_content(note, Some(root)).unwrap(),
+        get_note_content_blocking(note, Some(root)).unwrap(),
         "# Windows-Sensitive Path\n\nBody\n"
     );
 }
@@ -118,7 +141,8 @@ fn commands_reject_paths_outside_requested_vault() {
     let outside_note = outside.path().join("outside.md");
     fs::write(&outside_note, "# Outside\n").unwrap();
 
-    let error = get_note_content(outside_note, Some(vault.path().to_path_buf())).unwrap_err();
+    let error =
+        get_note_content_blocking(outside_note, Some(vault.path().to_path_buf())).unwrap_err();
     assert!(error.contains("Path must stay inside the active vault"));
 
     let folder_error =
@@ -215,8 +239,11 @@ fn validate_note_content_compares_against_disk() {
     let note = note_path(&dir, "note.md");
     fs::write(&note, "# Fresh\n").unwrap();
 
-    assert!(
-        validate_note_content(note.clone(), "# Fresh\n".to_string(), Some(root.clone()),).unwrap()
-    );
-    assert!(!validate_note_content(note, "# Stale\n".to_string(), Some(root)).unwrap());
+    assert!(validate_note_content_blocking(
+        note.clone(),
+        "# Fresh\n".to_string(),
+        Some(root.clone()),
+    )
+    .unwrap());
+    assert!(!validate_note_content_blocking(note, "# Stale\n".to_string(), Some(root)).unwrap());
 }

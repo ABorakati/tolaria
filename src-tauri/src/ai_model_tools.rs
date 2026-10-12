@@ -217,7 +217,7 @@ fn create_note_from_tool_args(
     let note_path = required_tool_string(args, "path")?;
     let content = create_note_tool_content(args, note_path);
     let vault_path = tool_vault_path(request, args)?;
-    crate::commands::create_note_content(
+    crate::commands::create_note_content_blocking(
         PathBuf::from(note_path),
         content,
         Some(PathBuf::from(vault_path)),

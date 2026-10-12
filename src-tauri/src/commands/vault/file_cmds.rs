@@ -200,8 +200,10 @@ fn with_writable_note_path<T>(
     )
 }
 
-#[tauri::command]
-pub fn get_note_content(path: PathBuf, vault_path: Option<PathBuf>) -> Result<String, String> {
+pub(crate) fn get_note_content_blocking(
+    path: PathBuf,
+    vault_path: Option<PathBuf>,
+) -> Result<String, String> {
     with_note_path(
         path.as_path(),
         vault_path.as_deref(),
@@ -211,7 +213,14 @@ pub fn get_note_content(path: PathBuf, vault_path: Option<PathBuf>) -> Result<St
 }
 
 #[tauri::command]
-pub fn validate_note_content(
+pub async fn get_note_content(
+    path: PathBuf,
+    vault_path: Option<PathBuf>,
+) -> Result<String, String> {
+    super::off_main_thread(move || get_note_content_blocking(path, vault_path)).await
+}
+
+pub(crate) fn validate_note_content_blocking(
     path: PathBuf,
     content: String,
     vault_path: Option<PathBuf>,
@@ -222,6 +231,15 @@ pub fn validate_note_content(
         ValidatedPathMode::Existing,
         |validated_path| vault::note_content_matches(validated_path, &content),
     )
+}
+
+#[tauri::command]
+pub async fn validate_note_content(
+    path: PathBuf,
+    content: String,
+    vault_path: Option<PathBuf>,
+) -> Result<bool, String> {
+    super::off_main_thread(move || validate_note_content_blocking(path, content, vault_path)).await
 }
 
 #[tauri::command]
@@ -239,8 +257,7 @@ pub async fn save_note_content(
     .map_err(|e| format!("Task panicked: {e}"))?
 }
 
-#[tauri::command]
-pub fn create_note_content(
+pub(crate) fn create_note_content_blocking(
     path: PathBuf,
     content: String,
     vault_path: Option<PathBuf>,
@@ -248,6 +265,15 @@ pub fn create_note_content(
     with_writable_note_path(path, vault_path, |validated_path| {
         vault::create_note_content(validated_path, &content)
     })
+}
+
+#[tauri::command]
+pub async fn create_note_content(
+    path: PathBuf,
+    content: String,
+    vault_path: Option<PathBuf>,
+) -> Result<(), String> {
+    super::off_main_thread(move || create_note_content_blocking(path, content, vault_path)).await
 }
 
 #[tauri::command]
@@ -328,8 +354,10 @@ fn scan_visible_vault_folders(vault_path: &Path) -> Result<Vec<FolderNode>, Stri
 
 /// Sync the `title` frontmatter field with the filename on note open.
 /// Returns `true` if the file was modified (title was absent or desynced).
-#[tauri::command]
-pub fn sync_note_title(path: PathBuf, vault_path: Option<PathBuf>) -> Result<bool, String> {
+pub(crate) fn sync_note_title_blocking(
+    path: PathBuf,
+    vault_path: Option<PathBuf>,
+) -> Result<bool, String> {
     use vault::SyncAction;
 
     with_note_path(
@@ -341,6 +369,11 @@ pub fn sync_note_title(path: PathBuf, vault_path: Option<PathBuf>) -> Result<boo
             Ok(matches!(action, SyncAction::Updated { .. }))
         },
     )
+}
+
+#[tauri::command]
+pub async fn sync_note_title(path: PathBuf, vault_path: Option<PathBuf>) -> Result<bool, String> {
+    super::off_main_thread(move || sync_note_title_blocking(path, vault_path)).await
 }
 
 #[tauri::command]
