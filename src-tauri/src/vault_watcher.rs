@@ -1,5 +1,7 @@
+use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 
 use serde::Serialize;
 
@@ -84,18 +86,47 @@ fn is_watchable_path(path: &Path, git_dir: Option<&Path>) -> bool {
     }
 }
 
+type ContentFingerprint = (Option<SystemTime>, u64);
+
+/// Last size and modified time seen per path, so attribute-only notifications
+/// can be told apart from content changes. Windows reports attribute changes
+/// (OneDrive sync state, Files On-Demand hydration, Storage Sense) as plain
+/// modifications, and each one would otherwise trigger a full vault reload.
+#[derive(Default)]
+struct ContentFingerprints(HashMap<PathBuf, ContentFingerprint>);
+
+impl ContentFingerprints {
+    fn modified_content(&mut self, path: &Path) -> bool {
+        let Ok(metadata) = std::fs::metadata(path) else {
+            self.0.remove(path);
+            return true;
+        };
+        if metadata.is_dir() {
+            return false;
+        }
+        let fingerprint = (metadata.modified().ok(), metadata.len());
+        self.0.insert(path.to_path_buf(), fingerprint) != Some(fingerprint)
+    }
+
+    fn forget(&mut self, path: &Path) {
+        self.0.remove(path);
+    }
+}
+
 #[cfg(desktop)]
 mod desktop {
     use std::collections::HashSet;
     use std::sync::Mutex;
 
+    use notify::event::ModifyKind;
     use notify::{
         recommended_watcher, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher,
     };
     use tauri::Emitter;
 
     use super::{
-        is_watchable_path, resolve_git_dir, Path, PathBuf, VaultChangedPayload, VAULT_CHANGED_EVENT,
+        is_watchable_path, resolve_git_dir, ContentFingerprints, Path, PathBuf,
+        VaultChangedPayload, VAULT_CHANGED_EVENT,
     };
 
     struct ActiveVaultWatcher {
@@ -148,14 +179,40 @@ mod desktop {
         !matches!(event.kind, EventKind::Access(_))
     }
 
-    fn changed_paths(event: Event, git_dir: Option<&Path>) -> Vec<String> {
+    fn is_content_change(
+        kind: &EventKind,
+        path: &Path,
+        fingerprints: &mut ContentFingerprints,
+    ) -> bool {
+        match kind {
+            EventKind::Modify(ModifyKind::Any | ModifyKind::Metadata(_)) => {
+                fingerprints.modified_content(path)
+            }
+            EventKind::Remove(_) => {
+                fingerprints.forget(path);
+                true
+            }
+            _ => {
+                fingerprints.modified_content(path);
+                true
+            }
+        }
+    }
+
+    fn changed_paths(
+        event: Event,
+        git_dir: Option<&Path>,
+        fingerprints: &mut ContentFingerprints,
+    ) -> Vec<String> {
         if !should_emit_event(&event) {
             return Vec::new();
         }
+        let kind = event.kind;
         event
             .paths
             .into_iter()
             .filter(|path| is_watchable_path(path, git_dir))
+            .filter(|path| is_content_change(&kind, path, fingerprints))
             .map(|path| path.to_string_lossy().to_string())
             .collect()
     }
@@ -165,8 +222,9 @@ mod desktop {
         vault_path: &Path,
         git_dir: Option<&Path>,
         event: Event,
+        fingerprints: &mut ContentFingerprints,
     ) {
-        let paths = changed_paths(event, git_dir);
+        let paths = changed_paths(event, git_dir, fingerprints);
         if paths.is_empty() {
             return;
         }
@@ -198,12 +256,14 @@ mod desktop {
         let event_vault_path = vault_path.clone();
         let event_git_dir = resolve_git_dir(&vault_path);
         let event_app = app.clone();
+        let mut fingerprints = ContentFingerprints::default();
         let mut watcher = recommended_watcher(move |event| match event {
             Ok(event) => emit_vault_change(
                 &event_app,
                 &event_vault_path,
                 event_git_dir.as_deref(),
                 event,
+                &mut fingerprints,
             ),
             Err(err) => log::warn!("Vault watcher event failed: {}", err),
         })
@@ -233,7 +293,7 @@ mod desktop {
     mod tests {
         use std::collections::HashSet;
 
-        use notify::event::{AccessKind, CreateKind, EventAttributes};
+        use notify::event::{AccessKind, CreateKind, EventAttributes, ModifyKind, RemoveKind};
         use notify::{Event, EventKind};
 
         use super::*;
@@ -268,6 +328,7 @@ mod desktop {
             let paths = changed_paths(
                 event(EventKind::Access(AccessKind::Read), &["notes/today.md"]),
                 None,
+                &mut ContentFingerprints::default(),
             );
 
             assert!(paths.is_empty());
@@ -285,6 +346,7 @@ mod desktop {
                     ],
                 ),
                 None,
+                &mut ContentFingerprints::default(),
             );
 
             assert_eq!(paths, vec!["notes/today.md"]);
@@ -307,9 +369,73 @@ mod desktop {
                     ],
                 ),
                 None,
+                &mut ContentFingerprints::default(),
             );
 
             assert_eq!(paths, vec!["notes/keep.md"]);
+        }
+
+        fn modify_any(path: &Path) -> Event {
+            event(
+                EventKind::Modify(ModifyKind::Any),
+                &[path.to_str().unwrap()],
+            )
+        }
+
+        #[test]
+        fn attribute_only_modifications_do_not_reach_the_frontend() {
+            let dir = tempfile::TempDir::new().unwrap();
+            let note = dir.path().join("note.md");
+            std::fs::write(&note, "# Note\n").unwrap();
+            let mut fingerprints = ContentFingerprints::default();
+
+            let first = changed_paths(modify_any(&note), None, &mut fingerprints);
+            let mut permissions = std::fs::metadata(&note).unwrap().permissions();
+            permissions.set_readonly(true);
+            std::fs::set_permissions(&note, permissions).unwrap();
+            let attribute_only = changed_paths(modify_any(&note), None, &mut fingerprints);
+
+            assert_eq!(first.len(), 1);
+            assert!(attribute_only.is_empty());
+        }
+
+        #[test]
+        fn content_modifications_and_removals_still_reach_the_frontend() {
+            let dir = tempfile::TempDir::new().unwrap();
+            let note = dir.path().join("note.md");
+            std::fs::write(&note, "# Note\n").unwrap();
+            let mut fingerprints = ContentFingerprints::default();
+            changed_paths(modify_any(&note), None, &mut fingerprints);
+
+            std::fs::write(&note, "# Note\n\nEdited elsewhere\n").unwrap();
+            let edited = changed_paths(modify_any(&note), None, &mut fingerprints);
+            std::fs::remove_file(&note).unwrap();
+            let removed = changed_paths(
+                event(
+                    EventKind::Remove(RemoveKind::File),
+                    &[note.to_str().unwrap()],
+                ),
+                None,
+                &mut fingerprints,
+            );
+
+            assert_eq!(edited.len(), 1);
+            assert_eq!(removed.len(), 1);
+        }
+
+        #[test]
+        fn directory_modifications_are_left_to_their_children() {
+            let dir = tempfile::TempDir::new().unwrap();
+            let folder = dir.path().join("projects");
+            std::fs::create_dir(&folder).unwrap();
+
+            let paths = changed_paths(
+                modify_any(&folder),
+                None,
+                &mut ContentFingerprints::default(),
+            );
+
+            assert!(paths.is_empty());
         }
 
         #[test]
