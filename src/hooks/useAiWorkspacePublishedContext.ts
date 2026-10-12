@@ -18,6 +18,8 @@ interface UseAiWorkspacePublishedContextParams {
   views: ViewFile[]
 }
 
+export const AI_WORKSPACE_CONTEXT_PUBLISH_DELAY_MS = 300
+
 type NoteListFilter = {
   query: string
   type: string | null
@@ -76,16 +78,21 @@ export function useAiWorkspacePublishedContext(options: UseAiWorkspacePublishedC
 
   const noteListFilter = useMemo(() => noteListFilterForSelection(effectiveSelection), [effectiveSelection])
 
+  // Publishing clones every entry and writes the JSON to localStorage synchronously,
+  // and one edit cycle changes tabs, entries and the note list several times.
   useEffect(() => {
-    publishAiWorkspaceWindowSharedContext({
-      ...context,
-      activeEntry: activeTab?.entry ?? null,
-      activeNoteContent: activeTab?.content ?? null,
-      entries,
-      openTabs: tabs.map((tab) => tab.entry),
-      noteList,
-      noteListFilter,
-    })
+    const timer = setTimeout(() => {
+      publishAiWorkspaceWindowSharedContext({
+        ...context,
+        activeEntry: activeTab?.entry ?? null,
+        activeNoteContent: activeTab?.content ?? null,
+        entries,
+        openTabs: tabs.map((tab) => tab.entry),
+        noteList,
+        noteListFilter,
+      })
+    }, AI_WORKSPACE_CONTEXT_PUBLISH_DELAY_MS)
+    return () => clearTimeout(timer)
   }, [activeTab?.content, activeTab?.entry, context, entries, noteList, noteListFilter, tabs])
 
   return {
