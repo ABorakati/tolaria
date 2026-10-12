@@ -109,7 +109,7 @@ struct GitLaunchConfig {
     path: Option<OsString>,
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 struct ShellGitConfig {
     git_path: Option<PathBuf>,
     path: Option<OsString>,
@@ -366,8 +366,26 @@ fn push_unique_path(paths: &mut Vec<PathBuf>, candidate: PathBuf) {
     paths.push(candidate);
 }
 
+/// Spawning a login shell costs 0.1–2 s with a typical zsh profile, and every
+/// git command needs this, so resolve it once per process. Settings-driven
+/// choices (WSL provider, configured git path) stay live in
+/// `detect_git_launch_config`.
 #[cfg(target_os = "macos")]
 fn shell_git_config() -> Option<ShellGitConfig> {
+    static CONFIG: OnceLock<Option<ShellGitConfig>> = OnceLock::new();
+    cached_shell_git_config(&CONFIG, detect_shell_git_config)
+}
+
+#[cfg(any(test, target_os = "macos"))]
+fn cached_shell_git_config(
+    cache: &OnceLock<Option<ShellGitConfig>>,
+    detect: impl FnOnce() -> Option<ShellGitConfig>,
+) -> Option<ShellGitConfig> {
+    cache.get_or_init(detect).clone()
+}
+
+#[cfg(target_os = "macos")]
+fn detect_shell_git_config() -> Option<ShellGitConfig> {
     user_shell_candidates()
         .into_iter()
         .filter(|shell| shell.exists())
