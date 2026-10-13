@@ -21,6 +21,7 @@ import { zoomCursorFix } from '../extensions/zoomCursorFix'
 import { rawEditorTextInputAttributes } from '../lib/nativeTextAssistance'
 import { isInsideMarkdownFence } from '../utils/markdownFences'
 import { isWindows } from '../utils/platform'
+import { applyRawMarkdownChanges } from '../utils/rawMarkdownSource'
 
 const FONT_FAMILY = '"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
 const RAW_EDITOR_COLORS = {
@@ -339,6 +340,7 @@ export function useCodeMirror(
   const viewRef = useRef<EditorView | null>(null)
   const callbacksRef = useRef(callbacks)
   const initialContentRef = useRef(content)
+  const sourceContentRef = useRef(content)
   useEffect(() => {
     callbacksRef.current = callbacks
   }, [callbacks])
@@ -350,7 +352,8 @@ export function useCodeMirror(
     const view = viewRef.current
     if (!view) return
     const current = view.state.doc.toString()
-    if (current === content) return
+    sourceContentRef.current = content
+    if (current === content.replace(/\r\n?|\n/g, '\n')) return
     externalSyncRef.current = true
     view.dispatch({ changes: { from: 0, to: current.length, insert: content } })
     externalSyncRef.current = false
@@ -380,7 +383,8 @@ export function useCodeMirror(
         zoomCursorFix(),
         EditorView.updateListener.of((update) => {
           if (update.docChanged && !externalSyncRef.current) {
-            callbacksRef.current.onDocChange(update.state.doc.toString())
+            sourceContentRef.current = applyRawMarkdownChanges(sourceContentRef.current, update.changes)
+            callbacksRef.current.onDocChange(sourceContentRef.current)
           }
           if (update.selectionSet || update.docChanged) {
             callbacksRef.current.onCursorActivity(update.view)

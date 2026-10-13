@@ -20,6 +20,8 @@ import type {
   DirectMarkdownCapableSerializer,
 } from './blockNoteDirectMarkdown'
 import { installBlockNoteDirectMarkdown } from './blockNoteDirectMarkdown'
+import { patchMarkdownSource } from './markdownSourcePatch'
+import { readRichEditorSource, rememberRichEditorSource } from './richEditorSourceState'
 
 type EditorBlocksSnapshot = unknown[]
 type MarkdownBody = string
@@ -432,6 +434,27 @@ function isBlankParagraphPlaceholderContent(content: unknown): boolean {
 }
 
 export function serializeRichEditorDocumentToMarkdown({
+  blocks,
+  editor,
+  notePath,
+  tabContent,
+  vaultPath,
+}: RichEditorDocumentSerializationOptions): string {
+  const rendered = serializeRichEditorCanonicalDocument({ blocks, editor, notePath, tabContent, vaultPath })
+  const baseline = readRichEditorSource(editor, notePath ?? '', tabContent)
+  const content = baseline ? patchMarkdownSource(tabContent, baseline.rendered, rendered) : rendered
+  rememberRichEditorSource(editor, notePath ?? '', content, rendered)
+  return content
+}
+
+export function captureRichEditorMarkdownSource(options: RichEditorDocumentSerializationOptions): void {
+  if (!isDirectMarkdownCapableSerializer(options.editor) || !options.editor.__tolariaDirectMarkdownCache) return
+  if (readRichEditorSource(options.editor, options.notePath ?? '', options.tabContent)) return
+  const rendered = serializeRichEditorCanonicalDocument(options)
+  rememberRichEditorSource(options.editor, options.notePath ?? '', options.tabContent, rendered)
+}
+
+function serializeRichEditorCanonicalDocument({
   blocks,
   editor,
   notePath,
