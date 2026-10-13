@@ -1064,5 +1064,19 @@
   "editor.sheet.formula.description.vlookup": "Šukaie značennie pa viertykali.",
   "editor.sheet.formula.description.xlookup": "Šukaie značennie ŭ dyiapazonie.",
   "editor.sheet.formula.description.year": "Vylučaie hod z daty.",
-  "telemetryConsent.saveError": "Tolaria nie zmahła zachavać hety vybar. Praviercie, ci vaš ulikaŭy zapis moža zapisvać nałady prahramy, zatym pasprabujcie jašče raz."
+  "telemetryConsent.saveError": "Tolaria nie zmahła zachavać hety vybar. Praviercie, ci vaš ulikaŭy zapis moža zapisvać nałady prahramy, zatym pasprabujcie jašče raz.",
+  "collab.connect.title": "Adkryć ahulnuju natatku",
+  "collab.connect.token": "Tokien siervera",
+  "collab.connect.name": "Vaša imia",
+  "collab.connect.note": "Šlach da natatki",
+  "collab.connect.submit": "Adkryć natatku",
+  "collab.status.connecting": "Idzie padklučennie…",
+  "collab.status.syncing": "Sinchranizacyja…",
+  "collab.status.synced": "Usie zmieny sinchranizavany",
+  "collab.status.offline": "Aŭtanomny režym. Vašy zmieny zachoŭvajucca i adpraŭlajucca pry paŭtornym padklučenni.",
+  "collab.status.closed": "Adklučana",
+  "collab.conflict": "Vašy praŭki kanfliktavali sa zmienaj, zroblenaj u inšym miescy, i byli zachavany jak {file}.",
+  "collab.presence.label": "Ludzi ŭ hetaj natatcy",
+  "collab.presence.you": "{name} (vy)",
+  "collab.error.open": "Hetuju natatku nie ŭdałosia adkryć."
 }

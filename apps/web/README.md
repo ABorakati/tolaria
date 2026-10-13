@@ -25,3 +25,15 @@ Today the bundle runs on demo data from `src/mock-tauri/`. The remote backend th
 - Decision record: [ADR 0185](../../docs/adr/0185-tolaria-web-target-and-vault-backend-seam.md)
 
 The preview server binds to loopback by default. Read the safety rules in the device-test guide before binding it to any other address.
+
+## Collaborative note page (spike S4, TOL-8)
+
+`collab.html` is a second page of this build only: one note opened as a live document, with presence avatars, live cursors and a sync status. It talks to a [Tolaria server](../server/README.md) on its own origin; the preview server forwards `/v1` (websockets included) when `TOLARIA_REMOTE_URL` is set.
+
+```bash
+pnpm build:web
+TOLARIA_REMOTE_URL=http://127.0.0.1:8787 pnpm preview:web
+# http://127.0.0.1:4173/apps/web/collab.html?note=welcome.md
+```
+
+`pnpm playwright:web` runs the `collab` project too: it starts a server with a throwaway vault and has desktop Chromium, desktop WebKit and an iPhone viewport edit one note at once. See `docs/web/s4-spike-report.md`.

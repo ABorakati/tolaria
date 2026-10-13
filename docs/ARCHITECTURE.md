@@ -946,6 +946,25 @@ Browser smoke tests can also override `window.__mockHandlers` before the app boo
 
 `apps/web/` is the Tolaria Web build target. `pnpm build:web` builds the same `index.html` and `src/` into `apps/web/dist` with no Tauri runtime, and `pnpm preview:web` serves it on loopback. Until the remote backend exists it runs on this mock layer. `pnpm build` and the Tauri bundle are unaffected. See `docs/web/s1-tauri-inventory.md` for the command inventory, migration path and server surface.
 
+### Tolaria remote (`apps/server`, `packages/protocol`)
+
+`apps/server` is the Tolaria remote: a Node service that owns a git working clone of one vault and serves the versioned file protocol in `docs/web/protocol.md` (ADR 0186). Each save is one commit between a pull and a push; a write based on an outdated revision becomes a conflict copy. `packages/protocol` holds the wire types the server and the web client share. Both are plain directories of the root package, like `apps/web`: the shell does not import them, `pnpm build` only typechecks them, and the desktop bundle and the lockfile are unchanged. `pnpm test:server` runs their tests against real git repositories in temporary directories. The server runs with `pnpm run server`, which bundles the entry point first because it shares the markdown pipeline in `src/`.
+
+### Collaboration (`packages/markdown-yjs`, `apps/server/src/collab`, `packages/collab-client`)
+
+A note can be co-edited as a Y.Doc while its markdown file stays canonical (ADR 0187, `docs/web/s4-spike-report.md`). `packages/markdown-yjs` converts between markdown and the `tolaria.blocknote/1` document with the editor's own parse and serialize steps on an unmounted BlockNote editor. `apps/server/src/collab` serves one room per `docId` on `/v1/collab/docs/<docId>` (y-protocols over `ws`), flushes edited documents to the vault on a cadence, and reconciles commits pulled from git into live documents. `packages/collab-client` holds the websocket provider and the `remote` `VaultBackend`; `apps/web/src/collab` is the collaborative note page of the web build (`apps/web/collab.html`). None of it is imported by the shell, so the desktop bundle contains no collaboration code; only the `collab.*` strings in the locale catalogs are shared.
+
+```mermaid
+flowchart LR
+  B1[Browser: BlockNote + CollabProvider] <-->|sync, awareness| R[Room per docId]
+  B2[Browser] <--> R
+  R -->|flush: source-preserving markdown| V[Vault: pull, commit, push]
+  V -->|onChange: reconcile| R
+  V <--> G[(git remote)]
+  D[Desktop app] <--> G
+  R --> S[(BlobStore: snapshots)]
+```
+
 ## State Management
 
 No Redux or global context. State lives in the root `App.tsx` and custom hooks:

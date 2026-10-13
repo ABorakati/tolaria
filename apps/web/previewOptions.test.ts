@@ -5,6 +5,7 @@ import {
   webPreviewAllowedHosts,
   webPreviewHost,
   webPreviewPort,
+  webPreviewProxy,
 } from './previewOptions.ts'
 
 describe('web preview options', () => {
@@ -36,6 +37,15 @@ describe('web preview options', () => {
     }
     for (const url of [undefined, '/', '/assets/index.js', '/apiary', '/notes/api/x']) {
       assert.equal(isApiRequestPath(url), false, String(url))
+    }
+  })
+
+  it('proxies the remote protocol, websockets included, only to an http(s) origin', () => {
+    assert.deepEqual(webPreviewProxy({ TOLARIA_REMOTE_URL: ' http://127.0.0.1:8787 ' }), {
+      '/v1': { target: 'http://127.0.0.1:8787', ws: true },
+    })
+    for (const invalid of [undefined, '', 'ftp://host', 'http://host/path', 'javascript:alert(1)', 'http://a b']) {
+      assert.equal(webPreviewProxy({ TOLARIA_REMOTE_URL: invalid }), undefined, String(invalid))
     }
   })
 })

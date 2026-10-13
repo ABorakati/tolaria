@@ -481,6 +481,20 @@ The renderer keeps app shortcuts platform-exact where they overlap with native d
 
 The desktop and mock backends implement only `files`, through the existing commands. Nothing in the app is routed through the interface yet.
 
+### Tolaria remote protocol and server
+
+`packages/protocol` (ADR 0186) defines what a `remote` backend speaks: `PROTOCOL_VERSION`, the `/v1` routes, capabilities, and the request and response shapes (`FileEntry`, `WriteResult`, `RenameRequest`, `SearchResponse`, `ErrorBody`). A file's `etag` is its git blob id and maps to the seam's `VaultRevision`; `WriteResult.outcome` is `created`, `updated`, `unchanged`, `recreated` or `conflict`, and a `conflict` carries the path of the conflict copy and the `current` revision of the original.
+
+Collaboration (ADR 0187) adds, in `packages/markdown-yjs`: `NoteCodec` (markdown to and from a `tolaria.blocknote/1` Y.Doc; `fileContent` writes an edit back over the source file's bytes), `merge3` and `reconcile` (three-way line merge and the adopt, merge or conflict decision), `patchBlocks` (changes a live document block by block). In `apps/server/src/collab`: `Room` (a document and its peers), `NoteSession` (the link between a room and its file: `flush`, `fileChanged`), `CollabHub` (rooms by `docId`), `FlushScheduler` and `FlushPolicy`, `TicketBook`, `SnapshotStore`. `Vault.update(path, produce)` computes a file's new content under the vault lock, after the pull. In `packages/collab-client`: `CollabProvider` (status `connecting`, `syncing`, `synced`, `offline`, `closed`) and `createRemoteVaultBackend`, whose `collab.openDoc` returns the `doc`, `fragment`, `provider` and `awareness` that BlockNote's `collaboration` option takes.
+
+In `apps/server`:
+
+- `Vault` (`src/vault.ts`) runs every mutation under one lock as pull, change, commit, push. `writeOutcome(current, incoming, precondition)` is the whole write decision.
+- `GitSync` (`src/gitSync.ts`) fetches, fast-forwards or replays unpushed commits onto the remote's history, and pushes with retry.
+- `VaultPath` (`src/paths.ts`) is a path that passed validation; only such paths reach the working clone.
+- `DocIndex` (`src/docIndex.ts`) gives each note a stable `docId` that follows renames, for the reserved collaboration channel.
+- `BlobStore` (`src/store.ts`) is the storage interface for server state outside git, with `LocalDiskStore`; it is the seam for Object Storage.
+
 ### Vault Scanning (Rust)
 
 `vault::scan_vault(path)` in `src-tauri/src/vault/mod.rs`:

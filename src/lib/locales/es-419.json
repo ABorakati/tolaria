@@ -1064,5 +1064,19 @@
   "locale.ukUA": "Ucraniano",
   "locale.svSE": "Sueco",
   "locale.skSK": "Eslovaco",
-  "telemetryConsent.saveError": "Tolaria no pudo guardar esta opción. Comprueba que tu cuenta pueda escribir la configuración de la aplicación y vuelve a intentarlo."
+  "telemetryConsent.saveError": "Tolaria no pudo guardar esta opción. Comprueba que tu cuenta pueda escribir la configuración de la aplicación y vuelve a intentarlo.",
+  "collab.connect.title": "Abrir una nota compartida",
+  "collab.connect.token": "Token del servidor",
+  "collab.connect.name": "Su nombre",
+  "collab.connect.note": "Ruta de la nota",
+  "collab.connect.submit": "Abrir nota",
+  "collab.status.connecting": "Conectando…",
+  "collab.status.syncing": "Sincronizando…",
+  "collab.status.synced": "Todos los cambios sincronizados",
+  "collab.status.offline": "Sin conexión. Tus cambios se guardan y se enviarán cuando te vuelvas a conectar.",
+  "collab.status.closed": "Desconectado",
+  "collab.conflict": "Sus modificaciones entraron en conflicto con un cambio realizado en otro lugar y se guardaron como {file}.",
+  "collab.presence.label": "Personas en esta nota",
+  "collab.presence.you": "{name} (tú)",
+  "collab.error.open": "No se pudo abrir esta nota."
 }

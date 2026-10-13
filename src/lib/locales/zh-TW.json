@@ -1064,5 +1064,19 @@
   "locale.ukUA": "烏克蘭語",
   "locale.svSE": "瑞典語",
   "locale.skSK": "斯洛伐克語",
-  "telemetryConsent.saveError": "Tolaria 無法儲存此選項。請檢查您的帳戶是否可以寫入其應用程式設定，然後再試一次。"
+  "telemetryConsent.saveError": "Tolaria 無法儲存此選項。請檢查您的帳戶是否可以寫入其應用程式設定，然後再試一次。",
+  "collab.connect.title": "開啟共用記事",
+  "collab.connect.token": "伺服器權杖",
+  "collab.connect.name": "您的姓名",
+  "collab.connect.note": "記事路徑",
+  "collab.connect.submit": "開啟記事",
+  "collab.status.connecting": "正在連線…",
+  "collab.status.syncing": "正在同步…",
+  "collab.status.synced": "所有變更已同步",
+  "collab.status.offline": "離線中。您的變更會被保留，並在重新連線時傳送。",
+  "collab.status.closed": "已中斷連線",
+  "collab.conflict": "您的編輯與在其他地方所做的變更發生衝突，並已另存為 {file}。",
+  "collab.presence.label": "此筆記中的人員",
+  "collab.presence.you": "{name}（您）",
+  "collab.error.open": "無法開啟此筆記。"
 }

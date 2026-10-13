@@ -1064,5 +1064,19 @@
   "locale.ukUA": "Ukrainian",
   "locale.svSE": "Swedish",
   "locale.skSK": "Slovak",
-  "telemetryConsent.saveError": "Tolaria couldn’t save this choice. Check that your account can write its app settings, then try again."
+  "telemetryConsent.saveError": "Tolaria couldn’t save this choice. Check that your account can write its app settings, then try again.",
+  "collab.connect.title": "Open a shared note",
+  "collab.connect.token": "Server token",
+  "collab.connect.name": "Your name",
+  "collab.connect.note": "Note path",
+  "collab.connect.submit": "Open note",
+  "collab.status.connecting": "Connecting…",
+  "collab.status.syncing": "Syncing…",
+  "collab.status.synced": "All changes synced",
+  "collab.status.offline": "Offline. Your changes are kept and sent when you reconnect.",
+  "collab.status.closed": "Disconnected",
+  "collab.conflict": "Your edits conflicted with a change made elsewhere and were saved as {file}.",
+  "collab.presence.label": "People in this note",
+  "collab.presence.you": "{name} (you)",
+  "collab.error.open": "This note could not be opened."
 }

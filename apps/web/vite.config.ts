@@ -1,11 +1,13 @@
 import { fileURLToPath } from 'node:url'
 import { defineConfig, mergeConfig, type Plugin, type UserConfig } from 'vite'
 import desktopConfig from '../../vite.config'
+import { yjsAlias } from '../server/yjsResolution.ts'
 import {
   isApiRequestPath,
   webPreviewAllowedHosts,
   webPreviewHost,
   webPreviewPort,
+  webPreviewProxy,
 } from './previewOptions'
 
 // Tolaria Web: static build of the shared shell (no Tauri runtime).
@@ -18,6 +20,11 @@ import {
 
 const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url))
 const WEB_OUT_DIR = fileURLToPath(new URL('./dist', import.meta.url))
+// The shell, plus the collaborative note page of spike S4 (TOL-8), which only this build has.
+const WEB_PAGES = {
+  main: fileURLToPath(new URL('../../index.html', import.meta.url)),
+  collab: fileURLToPath(new URL('./collab.html', import.meta.url)),
+}
 
 /**
  * Without this, the preview server's SPA fallback answers `/api/vault/ping`
@@ -48,7 +55,10 @@ function sharedShellConfig(): UserConfig {
 export default defineConfig(mergeConfig(sharedShellConfig(), {
   root: REPO_ROOT,
   plugins: [staticWebApiGuard()],
+  // One copy of Yjs for the page and for BlockNote; see apps/server/yjsResolution.ts.
+  resolve: { alias: [yjsAlias()] },
   build: {
+    rollupOptions: { input: WEB_PAGES },
     outDir: WEB_OUT_DIR,
     emptyOutDir: true,
     // Mobile Safari is the acceptance target; the desktop config follows TAURI_* env.
@@ -61,5 +71,6 @@ export default defineConfig(mergeConfig(sharedShellConfig(), {
     port: webPreviewPort(process.env),
     strictPort: true,
     allowedHosts: webPreviewAllowedHosts(process.env),
+    proxy: webPreviewProxy(process.env),
   },
 } satisfies UserConfig))

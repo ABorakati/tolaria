@@ -1064,5 +1064,19 @@
   "locale.ukUA": "Ukrainska",
   "locale.svSE": "Svenska",
   "locale.skSK": "Slovakiska",
-  "telemetryConsent.saveError": "Tolaria kunde inte spara det här valet. Kontrollera att ditt konto kan skriva sina appinställningar och försök sedan igen."
+  "telemetryConsent.saveError": "Tolaria kunde inte spara det här valet. Kontrollera att ditt konto kan skriva sina appinställningar och försök sedan igen.",
+  "collab.connect.title": "Öppna en delad anteckning",
+  "collab.connect.token": "Servertoken",
+  "collab.connect.name": "Ditt namn",
+  "collab.connect.note": "Sökväg till anteckning",
+  "collab.connect.submit": "Öppna anteckning",
+  "collab.status.connecting": "Ansluter …",
+  "collab.status.syncing": "Synkroniserar …",
+  "collab.status.synced": "Alla ändringar har synkroniserats",
+  "collab.status.offline": "Offline. Dina ändringar sparas och skickas när du återansluter.",
+  "collab.status.closed": "Frånkopplad",
+  "collab.conflict": "Dina ändringar stod i konflikt med en ändring som gjorts någon annanstans och sparades som {file}.",
+  "collab.presence.label": "Personer i den här anteckningen",
+  "collab.presence.you": "{name} (du)",
+  "collab.error.open": "Den här anteckningen kunde inte öppnas."
 }

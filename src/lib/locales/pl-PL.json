@@ -1064,5 +1064,19 @@
   "locale.ukUA": "Ukraiński",
   "locale.svSE": "Szwedzki",
   "locale.skSK": "Słowacki",
-  "telemetryConsent.saveError": "Tolaria nie mogła zapisać tego wyboru. Sprawdź, czy Twoje konto może zapisywać ustawienia aplikacji, a następnie spróbuj ponownie."
+  "telemetryConsent.saveError": "Tolaria nie mogła zapisać tego wyboru. Sprawdź, czy Twoje konto może zapisywać ustawienia aplikacji, a następnie spróbuj ponownie.",
+  "collab.connect.title": "Otwórz udostępnioną notatkę",
+  "collab.connect.token": "Token serwera",
+  "collab.connect.name": "Twoje imię i nazwisko",
+  "collab.connect.note": "Ścieżka notatki",
+  "collab.connect.submit": "Otwórz notatkę",
+  "collab.status.connecting": "Łączenie…",
+  "collab.status.syncing": "Synchronizowanie…",
+  "collab.status.synced": "Wszystkie zmiany zostały zsynchronizowane",
+  "collab.status.offline": "Tryb offline. Twoje zmiany są zachowywane i zostaną wysłane po ponownym połączeniu.",
+  "collab.status.closed": "Brak połączenia",
+  "collab.conflict": "Twoje zmiany weszły w konflikt ze zmianą wprowadzoną w innym miejscu i zostały zapisane jako {file}.",
+  "collab.presence.label": "Osoby w tej nocie",
+  "collab.presence.you": "{name} (Ty)",
+  "collab.error.open": "Nie udało się otworzyć tej notatki."
 }

@@ -1064,5 +1064,19 @@
   "locale.ukUA": "Ukrajinčina",
   "locale.svSE": "Švédčina",
   "locale.skSK": "Slovenčina",
-  "telemetryConsent.saveError": "Tolaria nemohla uložiť tento výber. Skontrolujte, či váš účet môže zapisovať nastavenia aplikácie, a potom to skúste znova."
+  "telemetryConsent.saveError": "Tolaria nemohla uložiť tento výber. Skontrolujte, či váš účet môže zapisovať nastavenia aplikácie, a potom to skúste znova.",
+  "collab.connect.title": "Otvoriť zdieľanú poznámku",
+  "collab.connect.token": "Token servera",
+  "collab.connect.name": "Vaše meno",
+  "collab.connect.note": "Cesta k poznámke",
+  "collab.connect.submit": "Otvoriť poznámku",
+  "collab.status.connecting": "Pripája sa…",
+  "collab.status.syncing": "Prebieha synchronizácia…",
+  "collab.status.synced": "Všetky zmeny sú synchronizované",
+  "collab.status.offline": "Offline. Vaše zmeny sa uchovajú a odošlú sa, keď sa znova pripojíte.",
+  "collab.status.closed": "Odpojené",
+  "collab.conflict": "Vaše úpravy boli v konflikte so zmenou vykonanou inde a boli uložené ako {file}.",
+  "collab.presence.label": "Osoby v tejto poznámke",
+  "collab.presence.you": "{name} (vy)",
+  "collab.error.open": "Túto poznámku sa nepodarilo otvoriť."
 }

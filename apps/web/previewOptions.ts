@@ -29,3 +29,20 @@ export function isApiRequestPath(url: string | undefined): boolean {
   const pathname = (url ?? '').split('?')[0]
   return pathname === '/api' || pathname.startsWith('/api/')
 }
+
+export interface RemoteProxy {
+  target: string
+  /** The collaboration channel is a websocket under the same prefix. */
+  ws: true
+}
+
+/**
+ * With TOLARIA_REMOTE_URL set, the preview server forwards the Tolaria remote protocol
+ * (`/v1/*`, websockets included) to that server, so the page talks to its own origin, as it
+ * will behind the hosted proxy. Unset, or not an http(s) URL: no proxy.
+ */
+export function webPreviewProxy(env: PreviewEnv): Record<string, RemoteProxy> | undefined {
+  const target = env.TOLARIA_REMOTE_URL?.trim() ?? ''
+  if (!/^https?:\/\/[^\s/]+\/?$/u.test(target)) return undefined
+  return { '/v1': { target, ws: true } }
+}

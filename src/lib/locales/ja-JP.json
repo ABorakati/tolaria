@@ -1064,5 +1064,19 @@
   "locale.ukUA": "ウクライナ語",
   "locale.svSE": "スウェーデン語",
   "locale.skSK": "スロバキア語",
-  "telemetryConsent.saveError": "Tolariaはこの選択を保存できませんでした。アカウントがアプリの設定を書き込めることを確認してから、もう一度お試しください。"
+  "telemetryConsent.saveError": "Tolariaはこの選択を保存できませんでした。アカウントがアプリの設定を書き込めることを確認してから、もう一度お試しください。",
+  "collab.connect.title": "共有ノートを開く",
+  "collab.connect.token": "サーバー トークン",
+  "collab.connect.name": "あなたの名前",
+  "collab.connect.note": "ノートのパス",
+  "collab.connect.submit": "ノートを開く",
+  "collab.status.connecting": "接続中…",
+  "collab.status.syncing": "同期中…",
+  "collab.status.synced": "すべての変更が同期されました",
+  "collab.status.offline": "オフラインです。変更内容は保持され、再接続時に送信されます。",
+  "collab.status.closed": "接続が切断されました",
+  "collab.conflict": "あなたの編集内容が別の場所で行われた変更と競合したため、{file}として保存されました。",
+  "collab.presence.label": "このノートにいる人",
+  "collab.presence.you": "{name}（あなた）",
+  "collab.error.open": "このノートを開けませんでした。"
 }
