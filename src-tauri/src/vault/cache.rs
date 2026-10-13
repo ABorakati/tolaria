@@ -3,7 +3,9 @@ use std::fs;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 
-use crate::git::{get_all_file_dates_for_workspace, GitDates, GitWorkspace};
+use crate::git::{
+    get_all_file_dates_for_workspace, get_file_dates_for_paths, GitDates, GitWorkspace,
+};
 use std::collections::HashMap;
 #[cfg(test)]
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
@@ -31,6 +33,9 @@ use cache_io::{
 /// v14: preserve scalar-array custom frontmatter properties in VaultEntry
 const CACHE_VERSION: u32 = 14;
 const CACHE_WRITE_LOCK_STALE_SECS: u64 = 30;
+/// More changed paths than this use the full-history lookup instead, which also
+/// keeps the `git log` command line well under the Windows length limit.
+const TARGETED_GIT_DATE_LOOKUP_MAX_PATHS: usize = 200;
 
 #[cfg(test)]
 static PANIC_ON_GIT_DATE_LOOKUP: AtomicBool = AtomicBool::new(false);
@@ -126,6 +131,13 @@ fn load_git_dates(workspace: &GitWorkspace) -> HashMap<String, GitDates> {
     }
 
     get_all_file_dates_for_workspace(workspace)
+}
+
+fn load_git_dates_for(workspace: &GitWorkspace, rel_paths: &[String]) -> HashMap<String, GitDates> {
+    if rel_paths.len() > TARGETED_GIT_DATE_LOOKUP_MAX_PATHS {
+        return load_git_dates(workspace);
+    }
+    get_file_dates_for_paths(workspace, rel_paths)
 }
 
 /// Parse a git status porcelain line into (status_code, file_path).
@@ -399,7 +411,7 @@ fn update_same_commit(
     let changed = git_uncommitted_files(workspace);
     let mut entries = cache.entries;
     if !changed.is_empty() {
-        let git_dates = load_git_dates(workspace);
+        let git_dates = load_git_dates_for(workspace, &changed);
         let changed_set: std::collections::HashSet<String> =
             changed.iter().map(|path| relative_path_key(path)).collect();
         entries.retain(|e| !changed_set.contains(&to_relative_path_key(&e.path, vault)));
@@ -418,10 +430,10 @@ fn update_different_commit(
     workspace: &GitWorkspace,
     loaded_cache: LoadedCache,
     current_hash: String,
-    git_dates: &HashMap<String, GitDates>,
 ) -> Vec<VaultEntry> {
     let LoadedCache { cache, fingerprint } = loaded_cache;
     let changed_files = git_changed_files(vault, workspace, &cache.commit_hash, &current_hash);
+    let git_dates = load_git_dates_for(workspace, &changed_files);
     let changed_set: std::collections::HashSet<String> = changed_files
         .iter()
         .map(|path| relative_path_key(path))
@@ -432,7 +444,7 @@ fn update_different_commit(
         .into_iter()
         .filter(|e| !changed_set.contains(&to_relative_path_key(&e.path, vault)))
         .collect();
-    entries.extend(parse_files_at(vault, &changed_files, git_dates));
+    entries.extend(parse_files_at(vault, &changed_files, &git_dates));
 
     finalize_and_cache(vault, entries, current_hash, Some(fingerprint))
 }
@@ -526,13 +538,11 @@ pub fn scan_vault_cached(vault_path: &Path) -> Result<Vec<VaultEntry>, String> {
             return if loaded_cache.cache.commit_hash == current_hash {
                 Ok(update_same_commit(vault_path, &workspace, loaded_cache))
             } else {
-                let git_dates = load_git_dates(&workspace);
                 Ok(update_different_commit(
                     vault_path,
                     &workspace,
                     loaded_cache,
                     current_hash,
-                    &git_dates,
                 ))
             };
         }
