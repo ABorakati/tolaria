@@ -326,12 +326,17 @@ fn ensure_missing_folder(folder_path: &Path, folder_name: &str) -> Result<(), St
 }
 
 fn scan_visible_vault_entries(vault_path: &Path) -> Result<Vec<VaultEntry>, String> {
+    let total = crate::phase_trace::start("list_vault_total", vault_path);
     let entries = vault::scan_vault_cached(vault_path)?;
-    Ok(filter_visible_vault_entries(
+    let filter = crate::phase_trace::start("list_vault_gitignore_filter", vault_path);
+    let entries = filter_visible_vault_entries(
         vault_path,
         entries,
         crate::settings::hide_gitignored_files_enabled(),
-    ))
+    );
+    filter.finish(entries.len());
+    total.finish(entries.len());
+    Ok(entries)
 }
 
 fn filter_visible_vault_entries(
@@ -425,9 +430,15 @@ pub async fn read_vault_snapshot(path: PathBuf) -> Result<Option<Vec<VaultEntry>
     let hide_gitignored = crate::settings::hide_gitignored_files_enabled();
     crate::commands::blocking::run_blocking(move || {
         with_expanded_vault_root(path.as_path(), |vault_path| {
+            let load = crate::phase_trace::start("snapshot_load_cache", vault_path);
             let snapshot = vault::read_vault_snapshot(vault_path)?;
-            Ok(snapshot
-                .map(|entries| filter_visible_vault_entries(vault_path, entries, hide_gitignored)))
+            load.finish(snapshot.as_ref().map_or(0, Vec::len));
+            Ok(snapshot.map(|entries| {
+                let filter = crate::phase_trace::start("snapshot_gitignore_filter", vault_path);
+                let entries = filter_visible_vault_entries(vault_path, entries, hide_gitignored);
+                filter.finish(entries.len());
+                entries
+            }))
         })
     })
     .await?

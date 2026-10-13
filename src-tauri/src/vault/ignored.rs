@@ -95,7 +95,13 @@ fn spawn_ignore_writer(
 }
 
 fn ignored_relative_paths(vault_path: &Path, relative_paths: &[String]) -> HashSet<String> {
-    if relative_paths.is_empty() || !has_gitignore_file(vault_path) {
+    if relative_paths.is_empty() {
+        return HashSet::new();
+    }
+    let lookup = crate::phase_trace::start("gitignore_has_file", vault_path);
+    let has_gitignore = has_gitignore_file(vault_path);
+    lookup.finish(usize::from(has_gitignore));
+    if !has_gitignore {
         return HashSet::new();
     }
 
@@ -107,12 +113,15 @@ fn ignored_relative_paths(vault_path: &Path, relative_paths: &[String]) -> HashS
     candidates.sort();
     candidates.dedup();
 
-    run_git_check_ignore(vault_path, &candidates)
+    let check = crate::phase_trace::start("gitignore_check_ignore", vault_path);
+    let ignored: HashSet<String> = run_git_check_ignore(vault_path, &candidates)
         .unwrap_or_default()
         .lines()
         .map(normalize_relative_path)
         .filter(|path| !path.is_empty())
-        .collect()
+        .collect();
+    check.finish(candidates.len());
+    ignored
 }
 
 fn filter_gitignored_items<T>(
@@ -125,7 +134,9 @@ fn filter_gitignored_items<T>(
         return items;
     }
 
+    let relative = crate::phase_trace::start("gitignore_relative_paths", vault_path);
     let relative_paths = items.iter().filter_map(&relative_for).collect::<Vec<_>>();
+    relative.finish(relative_paths.len());
     let ignored = ignored_relative_paths(vault_path, &relative_paths);
     if ignored.is_empty() {
         return items;

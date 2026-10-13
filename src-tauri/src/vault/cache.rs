@@ -408,20 +408,31 @@ fn update_same_commit(
     loaded_cache: LoadedCache,
 ) -> Vec<VaultEntry> {
     let LoadedCache { cache, fingerprint } = loaded_cache;
+    let status = crate::phase_trace::start("cache_uncommitted_files", vault);
     let changed = git_uncommitted_files(workspace);
+    status.finish(changed.len());
     let mut entries = cache.entries;
     if !changed.is_empty() {
+        let dates = crate::phase_trace::start("cache_git_dates", vault);
         let git_dates = load_git_dates_for(workspace, &changed);
+        dates.finish(git_dates.len());
         let changed_set: std::collections::HashSet<String> =
             changed.iter().map(|path| relative_path_key(path)).collect();
         entries.retain(|e| !changed_set.contains(&to_relative_path_key(&e.path, vault)));
+        let parse = crate::phase_trace::start("cache_parse_changed", vault);
         entries.extend(parse_files_at(vault, &changed, &git_dates));
+        parse.finish(changed.len());
     }
+    let prune = crate::phase_trace::start("cache_prune_stale", vault);
     let pruned = prune_stale_entries(vault, &mut entries);
+    prune.finish(entries.len());
     if changed.is_empty() && !pruned {
         return entries;
     }
-    finalize_and_cache(vault, entries, cache.commit_hash, Some(fingerprint))
+    let write = crate::phase_trace::start("cache_write", vault);
+    let entries = finalize_and_cache(vault, entries, cache.commit_hash, Some(fingerprint));
+    write.finish(entries.len());
+    entries
 }
 
 /// Handle different-commit cache: incremental update via git diff.
@@ -510,6 +521,7 @@ pub fn scan_vault_cached(vault_path: &Path) -> Result<Vec<VaultEntry>, String> {
     // Migrate legacy in-vault cache to external location on first run
     migrate_legacy_cache(vault_path);
 
+    let resolve = crate::phase_trace::start("cache_resolve_git", vault_path);
     let Some(workspace) = resolve_git_workspace(vault_path) else {
         return scan_vault(vault_path, &HashMap::new());
     };
@@ -517,8 +529,12 @@ pub fn scan_vault_cached(vault_path: &Path) -> Result<Vec<VaultEntry>, String> {
         Some(h) => h,
         None => return scan_vault(vault_path, &HashMap::new()),
     };
+    resolve.finish(0);
 
-    match load_cache(vault_path) {
+    let load = crate::phase_trace::start("cache_load", vault_path);
+    let loaded = load_cache(vault_path);
+    load.finish(0);
+    match loaded {
         CacheLoadState::Missing => {}
         CacheLoadState::Unreadable(error) => log::warn!("{error}"),
         CacheLoadState::Invalid(error) => {
