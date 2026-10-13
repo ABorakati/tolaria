@@ -1,6 +1,6 @@
 use super::{FolderNode, VaultEntry};
 use std::collections::HashSet;
-use std::io::Write;
+use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::process::{ChildStdin, Stdio};
 use std::thread::JoinHandle;
@@ -63,8 +63,11 @@ fn has_gitignore_file(vault_path: &Path) -> bool {
 }
 
 fn run_git_check_ignore(vault_path: &Path, relative_paths: &[String]) -> Option<String> {
+    // GIT_FLUSH=0 stops git flushing stdout after every matching path, which on
+    // Windows pipes made a vault with thousands of ignored files take seconds.
     let mut child = crate::hidden_command("git")
         .args(["check-ignore", "--no-index", "--stdin"])
+        .env("GIT_FLUSH", "0")
         .current_dir(vault_path)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -82,15 +85,13 @@ fn run_git_check_ignore(vault_path: &Path, relative_paths: &[String]) -> Option<
     None
 }
 
-fn spawn_ignore_writer(
-    mut stdin: ChildStdin,
-    paths: Vec<String>,
-) -> JoinHandle<std::io::Result<()>> {
+fn spawn_ignore_writer(stdin: ChildStdin, paths: Vec<String>) -> JoinHandle<std::io::Result<()>> {
     std::thread::spawn(move || {
+        let mut stdin = BufWriter::new(stdin);
         for path in paths {
             writeln!(stdin, "{path}")?;
         }
-        Ok(())
+        stdin.flush()
     })
 }
 

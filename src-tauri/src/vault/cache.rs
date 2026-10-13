@@ -349,13 +349,31 @@ fn migrate_legacy_cache(vault: &Path) {
     let _ = fs::remove_file(&legacy);
 }
 
+/// Relative paths of every file the vault scan could have cached, from one
+/// directory walk. Listing each folder once is far cheaper than a metadata call
+/// per cached entry, especially on OneDrive or with antivirus scanning.
+fn existing_relative_paths(vault: &Path) -> std::collections::HashSet<String> {
+    walkdir::WalkDir::new(vault)
+        .follow_links(true)
+        .into_iter()
+        .filter_entry(super::should_visit_vault_entry)
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().is_file())
+        .map(|entry| to_relative_path(&entry.path().to_string_lossy(), vault))
+        .collect()
+}
+
 /// Remove entries for files that no longer exist on disk and deduplicate
 /// by case-folded relative path (handles case-insensitive filesystems like macOS APFS).
 /// Returns `true` if any entries were removed.
 fn prune_stale_entries(vault: &Path, entries: &mut Vec<VaultEntry>) -> bool {
     let before = entries.len();
-    // Remove entries whose files no longer exist on disk
-    entries.retain(|e| std::path::Path::new(&e.path).is_file());
+    // Remove entries whose files no longer exist on disk. Entries the walk did
+    // not list (different spelling of the path, say) fall back to a direct check.
+    let existing = existing_relative_paths(vault);
+    entries.retain(|e| {
+        existing.contains(&to_relative_path(&e.path, vault)) || Path::new(&e.path).is_file()
+    });
     // Deduplicate by case-folded relative path
     let mut seen = std::collections::HashSet::new();
     entries.retain(|e| {
@@ -365,7 +383,7 @@ fn prune_stale_entries(vault: &Path, entries: &mut Vec<VaultEntry>) -> bool {
     entries.len() != before
 }
 
-/// Sort entries by modified_at descending and write the cache.
+/// Prune, sort entries by modified_at descending and write the cache.
 fn finalize_and_cache(
     vault: &Path,
     mut entries: Vec<VaultEntry>,
@@ -373,6 +391,16 @@ fn finalize_and_cache(
     expected_previous: Option<CacheFileFingerprint>,
 ) -> Vec<VaultEntry> {
     prune_stale_entries(vault, &mut entries);
+    sort_and_cache(vault, entries, hash, expected_previous)
+}
+
+/// Sort entries by modified_at descending and write the cache.
+fn sort_and_cache(
+    vault: &Path,
+    mut entries: Vec<VaultEntry>,
+    hash: String,
+    expected_previous: Option<CacheFileFingerprint>,
+) -> Vec<VaultEntry> {
     entries.sort_by_key(|entry| std::cmp::Reverse(entry.modified_at));
     let outcome = write_cache(
         vault,
@@ -430,7 +458,7 @@ fn update_same_commit(
         return entries;
     }
     let write = crate::phase_trace::start("cache_write", vault);
-    let entries = finalize_and_cache(vault, entries, cache.commit_hash, Some(fingerprint));
+    let entries = sort_and_cache(vault, entries, cache.commit_hash, Some(fingerprint));
     write.finish(entries.len());
     entries
 }
