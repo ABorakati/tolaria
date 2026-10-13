@@ -98,6 +98,34 @@ fn cache_path(vault: &Path) -> PathBuf {
     cache_dir().join(format!("{}.json", vault_path_hash(vault)))
 }
 
+fn gitignored_snapshot_path(vault: &Path) -> PathBuf {
+    cache_dir().join(format!("{}.gitignored.json", vault_path_hash(vault)))
+}
+
+/// Relative paths the last full listing hid as gitignored. The startup
+/// snapshot uses them instead of running `git check-ignore` over every cached
+/// path; the background listing refreshes them moments later.
+pub fn read_gitignored_snapshot(vault: &Path) -> Option<std::collections::HashSet<String>> {
+    let content = fs::read_to_string(gitignored_snapshot_path(vault)).ok()?;
+    serde_json::from_str(&content).ok()
+}
+
+pub fn write_gitignored_snapshot(vault: &Path, ignored: &[String]) {
+    let path = gitignored_snapshot_path(vault);
+    let tmp_path = path.with_extension("json.tmp");
+    let written = fs::create_dir_all(cache_dir())
+        .and_then(|()| {
+            fs::write(
+                &tmp_path,
+                serde_json::to_vec(ignored).map_err(std::io::Error::other)?,
+            )
+        })
+        .and_then(|()| fs::rename(&tmp_path, &path));
+    if let Err(error) = written {
+        log::warn!("Failed to write {}: {error}", path.display());
+    }
+}
+
 fn legacy_cache_path(vault: &Path) -> PathBuf {
     vault.join(".laputa-cache.json")
 }

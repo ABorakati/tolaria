@@ -163,6 +163,56 @@ pub fn filter_gitignored_paths(
     })
 }
 
+/// Like [`filter_gitignored_entries`], but also returns the relative paths of
+/// the entries it hid, so startup can reuse them without running git.
+pub fn partition_gitignored_entries(
+    vault_path: &Path,
+    entries: Vec<VaultEntry>,
+    hide_enabled: bool,
+) -> (Vec<VaultEntry>, Vec<String>) {
+    if !hide_enabled || entries.is_empty() {
+        return (entries, Vec::new());
+    }
+    let relative_for = |entry: &VaultEntry| relative_path(vault_path, Path::new(&entry.path));
+    let relative_paths = entries.iter().filter_map(relative_for).collect::<Vec<_>>();
+    let ignored = ignored_relative_paths(vault_path, &relative_paths);
+    if ignored.is_empty() {
+        return (entries, Vec::new());
+    }
+
+    let mut hidden = Vec::new();
+    let visible = entries
+        .into_iter()
+        .filter(|entry| match relative_for(entry) {
+            Some(relative) if ignored.contains(&relative) => {
+                hidden.push(relative);
+                false
+            }
+            _ => true,
+        })
+        .collect();
+    (visible, hidden)
+}
+
+/// Hide entries whose relative paths are in `ignored`, a set remembered from an
+/// earlier [`partition_gitignored_entries`] call.
+pub fn filter_entries_by_ignored_paths(
+    vault_path: &Path,
+    entries: Vec<VaultEntry>,
+    ignored: &HashSet<String>,
+) -> Vec<VaultEntry> {
+    if ignored.is_empty() {
+        return entries;
+    }
+    entries
+        .into_iter()
+        .filter(|entry| {
+            relative_path(vault_path, Path::new(&entry.path))
+                .map_or(true, |relative| !ignored.contains(&relative))
+        })
+        .collect()
+}
+
 pub fn filter_gitignored_entries(
     vault_path: &Path,
     entries: Vec<VaultEntry>,
