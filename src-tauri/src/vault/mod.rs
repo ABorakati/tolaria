@@ -29,6 +29,8 @@ mod view_value_conversions;
 mod views;
 
 pub use attachment_rename::{rename_attachment, AttachmentRenameRequest, AttachmentRenameResult};
+#[cfg(test)]
+pub(crate) use cache::TEST_CACHE_DIR_LOCK;
 pub use cache::{
     invalidate_cache, read_gitignored_snapshot, read_vault_snapshot, refresh_vault_cache,
     scan_vault_cached, write_gitignored_snapshot,

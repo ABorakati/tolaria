@@ -37,6 +37,11 @@ const CACHE_WRITE_LOCK_STALE_SECS: u64 = 30;
 /// keeps the `git log` command line well under the Windows length limit.
 const TARGETED_GIT_DATE_LOOKUP_MAX_PATHS: usize = 200;
 
+/// Serialises tests that point `LAPUTA_CACHE_DIR` at a temporary directory.
+/// The variable is process-global, so parallel tests would race.
+#[cfg(test)]
+pub(crate) static TEST_CACHE_DIR_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 #[cfg(test)]
 static PANIC_ON_GIT_DATE_LOOKUP: AtomicBool = AtomicBool::new(false);
 #[cfg(test)]

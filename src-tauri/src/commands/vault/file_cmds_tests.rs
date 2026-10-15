@@ -125,6 +125,9 @@ async fn folder_and_listing_commands_use_expanded_vault_root() {
 
 #[test]
 fn startup_snapshot_reuses_ignored_paths_from_the_last_listing() {
+    let _cache_dir_lock = vault::TEST_CACHE_DIR_LOCK.lock().unwrap();
+    let cache_dir = TempDir::new().unwrap();
+    std::env::set_var("LAPUTA_CACHE_DIR", cache_dir.path());
     let dir = TempDir::new().unwrap();
     fs::write(dir.path().join("visible.md"), "# Visible\n").unwrap();
     fs::write(dir.path().join("ignored.md"), "# Ignored\n").unwrap();
