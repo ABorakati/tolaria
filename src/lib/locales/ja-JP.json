@@ -1078,5 +1078,8 @@
   "collab.conflict": "あなたの編集内容が別の場所で行われた変更と競合したため、{file}として保存されました。",
   "collab.presence.label": "このノートにいる人",
   "collab.presence.you": "{name}（あなた）",
-  "collab.error.open": "このノートを開けませんでした。"
+  "collab.error.open": "このノートを開けませんでした。",
+  "editor.whiteboard.errorTitle": "ホワイトボードを表示できませんでした",
+  "editor.whiteboard.errorBody": "保存されたコンテンツを変更せずに、このホワイトボードを再度開いてみてください。",
+  "editor.whiteboard.retry": "ホワイトボードを再試行"
 }

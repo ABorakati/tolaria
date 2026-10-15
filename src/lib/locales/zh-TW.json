@@ -1078,5 +1078,8 @@
   "collab.conflict": "您的編輯與在其他地方所做的變更發生衝突，並已另存為 {file}。",
   "collab.presence.label": "此筆記中的人員",
   "collab.presence.you": "{name}（您）",
-  "collab.error.open": "無法開啟此筆記。"
+  "collab.error.open": "無法開啟此筆記。",
+  "editor.whiteboard.errorTitle": "無法顯示白板",
+  "editor.whiteboard.errorBody": "請重試以重新開啟此白板，且不變更其已儲存的內容。",
+  "editor.whiteboard.retry": "重試開啟白板"
 }

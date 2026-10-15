@@ -1078,5 +1078,8 @@
   "collab.conflict": "Vos modifications étaient en conflit avec une modification effectuée ailleurs et ont été enregistrées sous {file}.",
   "collab.presence.label": "Personnes dans cette note",
   "collab.presence.you": "{name} (vous)",
-  "collab.error.open": "Cette note n'a pas pu être ouverte."
+  "collab.error.open": "Cette note n'a pas pu être ouverte.",
+  "editor.whiteboard.errorTitle": "Le tableau blanc n'a pas pu être affiché",
+  "editor.whiteboard.errorBody": "Réessayez d'ouvrir ce tableau blanc sans modifier son contenu enregistré.",
+  "editor.whiteboard.retry": "Réessayer d'ouvrir le tableau blanc"
 }

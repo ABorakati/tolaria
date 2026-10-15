@@ -1078,5 +1078,8 @@
   "collab.conflict": "Le tue modifiche sono entrate in conflitto con una modifica apportata altrove e sono state salvate come {file}.",
   "collab.presence.label": "Persone in questa nota",
   "collab.presence.you": "{name} (tu)",
-  "collab.error.open": "Impossibile aprire questa nota."
+  "collab.error.open": "Impossibile aprire questa nota.",
+  "editor.whiteboard.errorTitle": "Impossibile visualizzare la lavagna",
+  "editor.whiteboard.errorBody": "Riprova ad aprire questa lavagna senza modificare il contenuto salvato.",
+  "editor.whiteboard.retry": "Riprova ad aprire la lavagna"
 }

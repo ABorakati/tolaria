@@ -1081,3 +1081,6 @@ files:
     collab.presence.label: bf4d8656b98dec65392089af27b4fe04
     collab.presence.you: 2f42560ef5401cbf55847b22cff66f1a
     collab.error.open: 799ae0bab73d97e81222f9417ef969ed
+    editor.whiteboard.errorTitle: af2d111bad72c2b10bb1489827674cd8
+    editor.whiteboard.errorBody: c4f6b90e08b9d0b594553b191ac2b580
+    editor.whiteboard.retry: fc575851ce7cbf7c4639ddccdc648d70

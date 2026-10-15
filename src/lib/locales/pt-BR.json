@@ -1078,5 +1078,8 @@
   "collab.conflict": "Suas edições entraram em conflito com uma alteração feita em outro lugar e foram salvas como {file}.",
   "collab.presence.label": "Pessoas nesta nota",
   "collab.presence.you": "{name} (você)",
-  "collab.error.open": "Não foi possível abrir esta nota."
+  "collab.error.open": "Não foi possível abrir esta nota.",
+  "editor.whiteboard.errorTitle": "Não foi possível exibir o quadro branco",
+  "editor.whiteboard.errorBody": "Tente novamente reabrir este quadro branco sem alterar seu conteúdo salvo.",
+  "editor.whiteboard.retry": "Tentar abrir o quadro branco novamente"
 }

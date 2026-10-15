@@ -1078,5 +1078,8 @@
   "collab.conflict": "Twoje zmiany weszły w konflikt ze zmianą wprowadzoną w innym miejscu i zostały zapisane jako {file}.",
   "collab.presence.label": "Osoby w tej nocie",
   "collab.presence.you": "{name} (Ty)",
-  "collab.error.open": "Nie udało się otworzyć tej notatki."
+  "collab.error.open": "Nie udało się otworzyć tej notatki.",
+  "editor.whiteboard.errorTitle": "Nie udało się wyświetlić tablicy",
+  "editor.whiteboard.errorBody": "Spróbuj ponownie otworzyć tę tablicę, nie zmieniając jej zapisanego contentu.",
+  "editor.whiteboard.retry": "Ponów próbę otwarcia tablicy"
 }

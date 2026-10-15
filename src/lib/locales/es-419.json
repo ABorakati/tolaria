@@ -1078,5 +1078,8 @@
   "collab.conflict": "Sus modificaciones entraron en conflicto con un cambio realizado en otro lugar y se guardaron como {file}.",
   "collab.presence.label": "Personas en esta nota",
   "collab.presence.you": "{name} (tú)",
-  "collab.error.open": "No se pudo abrir esta nota."
+  "collab.error.open": "No se pudo abrir esta nota.",
+  "editor.whiteboard.errorTitle": "No se pudo mostrar la pizarra",
+  "editor.whiteboard.errorBody": "Vuelva a intentar abrir esta pizarra sin cambiar su contenido guardado.",
+  "editor.whiteboard.retry": "Reintentar abrir la pizarra"
 }

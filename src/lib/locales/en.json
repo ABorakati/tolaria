@@ -1078,5 +1078,8 @@
   "collab.conflict": "Your edits conflicted with a change made elsewhere and were saved as {file}.",
   "collab.presence.label": "People in this note",
   "collab.presence.you": "{name} (you)",
-  "collab.error.open": "This note could not be opened."
+  "collab.error.open": "This note could not be opened.",
+  "editor.whiteboard.errorTitle": "Whiteboard could not be displayed",
+  "editor.whiteboard.errorBody": "Retry to reopen this whiteboard without changing its saved content.",
+  "editor.whiteboard.retry": "Retry whiteboard"
 }

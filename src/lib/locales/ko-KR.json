@@ -1078,5 +1078,8 @@
   "collab.conflict": "수정하신 내용이 다른 곳에서 이루어진 변경과 충돌하여 {file}(으)로 저장되었습니다.",
   "collab.presence.label": "이 노트에 포함된 사용자",
   "collab.presence.you": "{name} (본인)",
-  "collab.error.open": "이 노트를 열 수 없습니다."
+  "collab.error.open": "이 노트를 열 수 없습니다.",
+  "editor.whiteboard.errorTitle": "화이트보드를 표시할 수 없습니다",
+  "editor.whiteboard.errorBody": "저장된 콘텐츠를 변경하지 않고 이 화이트보드를 다시 열어보세요.",
+  "editor.whiteboard.retry": "화이트보드 다시 시도"
 }

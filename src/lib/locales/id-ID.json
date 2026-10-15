@@ -1078,5 +1078,8 @@
   "collab.conflict": "Perubahan Anda bertentangan dengan perubahan yang dilakukan di tempat lain dan disimpan sebagai {file}.",
   "collab.presence.label": "Orang-orang dalam catatan ini",
   "collab.presence.you": "{name} (Anda)",
-  "collab.error.open": "Catatan ini tidak dapat dibuka."
+  "collab.error.open": "Catatan ini tidak dapat dibuka.",
+  "editor.whiteboard.errorTitle": "Whiteboard tidak dapat ditampilkan",
+  "editor.whiteboard.errorBody": "Coba lagi untuk membuka kembali papan tulis ini tanpa mengubah kontennya yang sudah disimpan.",
+  "editor.whiteboard.retry": "Coba buka kembali papan tulis"
 }

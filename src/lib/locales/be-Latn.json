@@ -1078,5 +1078,8 @@
   "collab.conflict": "Vašy praŭki kanfliktavali sa zmienaj, zroblenaj u inšym miescy, i byli zachavany jak {file}.",
   "collab.presence.label": "Ludzi ŭ hetaj natatcy",
   "collab.presence.you": "{name} (vy)",
-  "collab.error.open": "Hetuju natatku nie ŭdałosia adkryć."
+  "collab.error.open": "Hetuju natatku nie ŭdałosia adkryć.",
+  "editor.whiteboard.errorTitle": "Nie ŭdałosia adlustravać došku",
+  "editor.whiteboard.errorBody": "Paŭtarycie sprobu adkryć hetuju došku, nie zmianiajučy jaje zachavany kantent.",
+  "editor.whiteboard.retry": "Paŭtaryć sprobu adkryccia doški"
 }

@@ -1078,5 +1078,8 @@
   "collab.conflict": "Các thay đổi của bạn xung đột với một thay đổi được thực hiện ở nơi khác và đã được lưu dưới dạng {file}.",
   "collab.presence.label": "Những người trong ghi chú này",
   "collab.presence.you": "{name} (bạn)",
-  "collab.error.open": "Không thể mở ghi chú này."
+  "collab.error.open": "Không thể mở ghi chú này.",
+  "editor.whiteboard.errorTitle": "Không thể hiển thị bảng trắng",
+  "editor.whiteboard.errorBody": "Thử lại để mở lại bảng trắng này mà không thay đổi nội dung đã lưu.",
+  "editor.whiteboard.retry": "Thử lại bảng trắng"
 }

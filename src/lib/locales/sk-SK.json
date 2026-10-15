@@ -1078,5 +1078,8 @@
   "collab.conflict": "Vaše úpravy boli v konflikte so zmenou vykonanou inde a boli uložené ako {file}.",
   "collab.presence.label": "Osoby v tejto poznámke",
   "collab.presence.you": "{name} (vy)",
-  "collab.error.open": "Túto poznámku sa nepodarilo otvoriť."
+  "collab.error.open": "Túto poznámku sa nepodarilo otvoriť.",
+  "editor.whiteboard.errorTitle": "Tabuľu sa nepodarilo zobraziť",
+  "editor.whiteboard.errorBody": "Skúste túto tabuľu znova otvoriť bez zmeny jej uloženého obsahu.",
+  "editor.whiteboard.retry": "Skúsiť znova otvoriť tabuľu"
 }
