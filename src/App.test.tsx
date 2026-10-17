@@ -366,6 +366,9 @@ vi.mock('./hooks/useUpdater', async () => {
 // Mock BlockNote components (they need DOM APIs not available in jsdom)
 vi.mock('@blocknote/core', () => ({
   audioParse: vi.fn(() => undefined), createAudioBlockConfig: vi.fn(() => ({})),
+  createFileBlockConfig: vi.fn(() => ({})),
+  createFileBlockSpec: vi.fn(() => ({ implementation: { toExternalHTML: () => null } })),
+  fileParse: vi.fn(() => undefined),
   BlockNoteSchema: { create: () => ({ extend: () => ({}) }) },
   createCodeBlockSpec: vi.fn(() => ({})),
   createExtension: (factory: unknown) => () => factory,

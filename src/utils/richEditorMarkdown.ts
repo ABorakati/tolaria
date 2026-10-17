@@ -125,6 +125,7 @@ export function preProcessRichEditorMarkdown(
 	const withLiteralBackslashes = preserveLiteralBackslashes(markdown);
 	const withDurableBlocks = preProcessDurableEditorMarkdown({
 		markdown: withLiteralBackslashes,
+		vaultPath,
 	});
 	const withEmptyChecklists = preProcessEmptyChecklistItems(withDurableBlocks);
 	const withBlankQuotes =
