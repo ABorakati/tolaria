@@ -1,11 +1,7 @@
 import { advanceMarkdownFence, type MarkdownFence } from "./markdownFences";
+import { isTableBodyLine, isTableStart } from "./markdownTables";
 
 const CELL_BREAK_TOKEN = "\uE000TOLARIACELLBREAK\uE001";
-function isTableSeparator({ line }: { line: string }): boolean {
-	const trimmed = line.trim();
-	const cells = trimmed.replace(/^\||\|$/gu, "").split("|");
-	return cells.every((cell) => /^:?-{3,}:?$/u.test(cell.trim()));
-}
 const INLINE_CODE_OR_BREAK = /(`+)[^`]*?\1|\\<|<br\s*\/?>/giu;
 
 function protectCellBreaks(line: string): string {
@@ -17,10 +13,6 @@ function protectCellBreaks(line: string): string {
 interface TableScanState {
 	fence: MarkdownFence | null;
 	inTable: boolean;
-}
-
-function continuesTable(line: string, state: TableScanState): boolean {
-	return state.inTable && line.includes("|") && line.trim() !== "";
 }
 
 interface TableLineContext {
@@ -38,8 +30,8 @@ function processTableLine({ line, nextLine, state }: TableLineContext): string {
 		state.inTable = false;
 		return line;
 	}
-	const tableStart = line.includes("|") && isTableSeparator({ line: nextLine });
-	state.inTable = tableStart || continuesTable(line, state);
+	const tableStart = isTableStart({ line, nextLine });
+	state.inTable = tableStart || (state.inTable && isTableBodyLine(line));
 	return state.inTable ? protectCellBreaks(line) : line;
 }
 

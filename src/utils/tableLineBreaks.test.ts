@@ -60,6 +60,33 @@ describe("durable table cell line breaks", () => {
 });
 
 describe("table break import boundaries", () => {
+	it.each([
+		"---",
+		String.raw`---\|---`,
+	])("does not protect breaks above a non-table separator %s", (separator) => {
+		const markdown = `a <br> | b\n${separator}`;
+		expect(preProcessTableCellBreaks(markdown)).toBe(markdown);
+		expect(tryParseFastMarkdownBlocks(markdown).blocks).not.toEqual(
+			expect.arrayContaining([expect.objectContaining({ type: "table" })]),
+		);
+	});
+	it("keeps escaped pipes and cell breaks in the same cell through both parsers", async () => {
+		const markdown = readFileSync(
+			"src/test/fixtures/table-escaped-pipe-breaks.md",
+			"utf8",
+		).trim();
+		const source = preProcessRichEditorMarkdown(markdown);
+		const editor = BlockNoteEditor.create({ schema });
+		const documents = [
+			await editor.tryParseMarkdownToBlocks(source),
+			tryParseFastMarkdownBlocks(source).blocks,
+		];
+		for (const blocks of documents) {
+			expect(
+				blocksToMarkdownDirect(injectRichEditorMarkdownBlocks(blocks)).markdown,
+			).toBe(markdown);
+		}
+	});
 	it("preserves literal breaks outside tables, inside code, and escaped tags", () => {
 		const source = readFileSync(
 			"src/test/fixtures/table-break-boundaries.md",
